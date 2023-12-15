@@ -1,0 +1,8 @@
+name: NotQuiteModded
+version: '1.0-SNAPSHOT'
+main: me.playfulpotato.notquitemodded.NotQuiteModded
+api-version: 1.19
+load: STARTUP
+commands:
+  TestCommand:
+    description: Test Command. This should NOT BE in public builds. If it is, I fucked up.
