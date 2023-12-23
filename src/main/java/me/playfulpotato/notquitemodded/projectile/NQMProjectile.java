@@ -79,7 +79,7 @@ public abstract class NQMProjectile {
                     continue;
 
                 if (damageEntities)
-                    currentEntity.damage(damage);
+                    currentEntity.damage(damage, projectileOwner);
 
                 hitEntity(currentEntity);
 

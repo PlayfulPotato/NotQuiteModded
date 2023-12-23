@@ -6,7 +6,7 @@
 
     <groupId>me.playfulpotato</groupId>
     <artifactId>NotQuiteModded</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.3</version>
     <packaging>jar</packaging>
 
     <name>NotQuiteModded</name>
@@ -73,12 +73,4 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub PlayfulPotato Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/PlayfulPotato/NotQuiteModded</url>
-        </repository>
-    </distributionManagement>
 </project>

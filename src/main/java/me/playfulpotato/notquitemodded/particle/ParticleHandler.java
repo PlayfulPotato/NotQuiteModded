@@ -25,6 +25,30 @@ public class ParticleHandler {
     public List<NQMParticle> EvenTick = new ArrayList<>();
     public List<NQMParticle> OddTick = new ArrayList<>();
 
+    public void CreateParticle(@NotNull NQMParticle creationParticle, @NotNull Location spawnLocation, @NotNull Vector velocity, boolean ignoreLightLevels, boolean force) {
+
+        if (!force) {
+            if (SpawnConditionsNotMet(spawnLocation))
+                return;
+        } else {
+            if (!spawnLocation.getChunk().isLoaded())
+                return;
+        }
+
+        activeParticles.add(creationParticle);
+        creationParticle.particleLocation = spawnLocation.clone();
+        creationParticle.velocity = velocity;
+        if (creationParticle.hasTextEntity) {
+            creationParticle.particleEntity = CreateParticleEntity(ignoreLightLevels, spawnLocation, creationParticle);
+        }
+        KickstartTicks();
+        creationParticle.OddTick = !ParticleTicker.OddTick;
+        if (creationParticle.OddTick) {
+            OddTick.add(creationParticle);
+        } else {
+            EvenTick.add(creationParticle);
+        }
+    }
     public void CreateParticle(@NotNull NQMParticle creationParticle, @NotNull Location spawnLocation, @NotNull Vector velocity, boolean ignoreLightLevels) {
 
         if (SpawnConditionsNotMet(spawnLocation))
