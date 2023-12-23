@@ -9,8 +9,10 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
@@ -53,7 +55,17 @@ public abstract class NQMBlockInventory implements InventoryHolder {
             NQMBlockInventory nqmInventory = (NQMBlockInventory) holder;
             Location location2 = new Location(nqmInventory.inventoryLocation.getWorld(), nqmInventory.inventoryLocation.getBlockX(), nqmInventory.inventoryLocation.getBlockY(), nqmInventory.inventoryLocation.getBlockZ(), 0, 0);
             if (location1.equals(location2)) {
-                syncCheckPlayer.openInventory(this.getInventory());
+                if (holder.getInventory().getSize() != this.getInventory().getSize()) {
+                    syncCheckPlayer.openInventory(this.getInventory());
+                } else {
+                    Inventory inventorySync = this.getInventory();
+                    for (int index = 0; index < inventorySync.getSize(); index++) {
+                        ItemStack syncItem = inventorySync.getItem(index);
+                        if (syncItem == null)
+                            continue;
+                        holder.getInventory().setItem(index, syncItem);
+                    }
+                }
             }
         }
     }
@@ -81,5 +93,8 @@ public abstract class NQMBlockInventory implements InventoryHolder {
         return null;
     }
     public abstract void InventoryClicked(InventoryClickEvent event);
+    public void InventoryDragged(InventoryDragEvent event) {
+        event.setCancelled(true);
+    }
 
 }

@@ -23,6 +23,7 @@ public abstract class NQMProjectile {
     public Entity projectileOwner;
     public boolean collideWithBlocks = true;
     public boolean collideWithEntities = true;
+    public boolean damageEntities = true;
     public final boolean hasEntity;
     public int timeLeft;
     public double hitBoxRadius;
@@ -77,8 +78,11 @@ public abstract class NQMProjectile {
                 if (currentEntity.getPersistentDataContainer().has(projectileCollideKey))
                     continue;
 
+                if (damageEntities)
+                    currentEntity.damage(damage);
 
-                currentEntity.damage(damage);
+                hitEntity(currentEntity);
+
                 pierce--;
                 if (pierce == -1) {
                     Kill();
@@ -97,13 +101,13 @@ public abstract class NQMProjectile {
         if (hasEntity)
             projectileEntity.remove();
 
+        KillEffects();
+
         NotQuiteModded.projectileHandler.activeProjectiles.remove(this);
         if (NotQuiteModded.projectileHandler.activeProjectiles.size() == 0 && ProjectileTicker.projectileTicker != null) {
             ProjectileTicker.projectileTicker.cancel();
             ProjectileTicker.projectileTicker = null;
         }
-
-        KillEffects();
     }
 
     public @Nullable Entity SpawnConnectedentity() {
@@ -115,5 +119,5 @@ public abstract class NQMProjectile {
     }
     public void Tick() {}
     public void KillEffects() { }
-
+    public void hitEntity(LivingEntity hitEntity) { }
 }

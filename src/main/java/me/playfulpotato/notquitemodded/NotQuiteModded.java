@@ -3,6 +3,7 @@ package me.playfulpotato.notquitemodded;
 import me.playfulpotato.notquitemodded.block.BlockHandler;
 import me.playfulpotato.notquitemodded.block.NQMBlock;
 import me.playfulpotato.notquitemodded.block.inventory.PlayerClickCustomInventory;
+import me.playfulpotato.notquitemodded.block.inventory.PlayerDragCustomInventory;
 import me.playfulpotato.notquitemodded.block.listeners.*;
 import me.playfulpotato.notquitemodded.item.ItemHandler;
 import me.playfulpotato.notquitemodded.item.listeners.*;
@@ -47,6 +48,7 @@ public final class NotQuiteModded extends JavaPlugin {
         pm.registerEvents(new PlayerInteract(), this);
         // Inventory
         pm.registerEvents(new PlayerClickCustomInventory(), this);
+        pm.registerEvents(new PlayerDragCustomInventory(), this);
 
         // Item Related Events
         pm.registerEvents(new PlayerInteractItemCheck(), this);

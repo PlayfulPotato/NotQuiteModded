@@ -89,6 +89,8 @@ public class BlockHandler {
                 }
             }
 
+            blockType.PreBreak(location1.clone().toCenterLocation());
+
             for (String key : blockType.uniqueDataPairs.keySet()) {
                 chunkDataContainer.remove(new NamespacedKey(blockType.plugin, key + "_" + ID));
             }

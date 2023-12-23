@@ -91,6 +91,12 @@ public abstract class NQMBlock {
     }
 
     public void Break(@NotNull Location breakLocation) { }
+
+    /**
+     * Runs before the deletion of any data for the block.
+     * @param breakLocation The location at which the block was broken.
+     */
+    public void PreBreak(@NotNull Location breakLocation) { }
     public void Tick(@NotNull Location blockLocation) { }
     public void Interact(@NotNull Location interactLocation, PlayerInteractEvent event) { }
     public void AfterPlace(@NotNull Location placeLocation) { }
