@@ -15,12 +15,24 @@ import java.util.List;
 public class ProjectileHandler {
     public List<NQMProjectile> activeProjectiles = new ArrayList<>();
 
+    /**
+     * Attempts to destroy every projectile in the game.
+     */
     public void DestroyAllProjectiles() {
         for (int i = 0; i < activeProjectiles.size(); i++) {
             activeProjectiles.get(i).Kill();
         }
     }
 
+    /**
+     * Creates a manually handled projectile.
+     * @param projectile The projectile to create.
+     * @param projectileOwner The owner of the projectile as an Entity.
+     * @param position The location or position the projectile should spawn from.
+     * @param velocity The velocity of the projectile, expressed as a vector.
+     * @param damage The amount of damage the projectile should be expected to deal.
+     * @return The projectile object.
+     */
     public NQMProjectile CreateProjectile(@NotNull NQMProjectile projectile, @NotNull Entity projectileOwner, @NotNull Location position, @NotNull Vector velocity, double damage) {
         projectile.damage = damage;
         projectile.position = position.clone();
@@ -33,6 +45,14 @@ public class ProjectileHandler {
         KickstartTicks();
         return projectile;
     }
+
+    /**
+     * Creates a projectile with an Entity as the shooter.
+     * @param projectile The projectile to shoot.
+     * @param projectileOwner The entity owner of the projectile.
+     * @param damage The amount of damage the projectile should deal.
+     * @return The projectile object.
+     */
     public NQMProjectile CreateProjectile(@NotNull NQMProjectile projectile, @NotNull Entity projectileOwner, double damage) {
         projectile.damage = damage;
         projectile.projectileOwner = projectileOwner;

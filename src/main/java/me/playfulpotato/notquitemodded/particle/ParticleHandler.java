@@ -25,6 +25,14 @@ public class ParticleHandler {
     public List<NQMParticle> EvenTick = new ArrayList<>();
     public List<NQMParticle> OddTick = new ArrayList<>();
 
+    /**
+     * Creates an NQMParticle at the location.
+     * @param creationParticle The particle object to create in the world.
+     * @param spawnLocation The spawn location of the particle.
+     * @param velocity The starting velocity of the particle.
+     * @param ignoreLightLevels Whether the particle ignores light levels. Making it "glow".
+     * @param force Whether the particle should ignore all spawn conditions and still be created. This isn't fully recommended, but is useful with particles at far distances.
+     */
     public void CreateParticle(@NotNull NQMParticle creationParticle, @NotNull Location spawnLocation, @NotNull Vector velocity, boolean ignoreLightLevels, boolean force) {
 
         if (!force) {
@@ -49,6 +57,13 @@ public class ParticleHandler {
             EvenTick.add(creationParticle);
         }
     }
+    /**
+     * Creates an NQMParticle at the location.
+     * @param creationParticle The particle object to create in the world.
+     * @param spawnLocation The spawn location of the particle.
+     * @param velocity The starting velocity of the particle.
+     * @param ignoreLightLevels Whether the particle ignores light levels. Making it "glow".
+     */
     public void CreateParticle(@NotNull NQMParticle creationParticle, @NotNull Location spawnLocation, @NotNull Vector velocity, boolean ignoreLightLevels) {
 
         if (SpawnConditionsNotMet(spawnLocation))
@@ -68,6 +83,12 @@ public class ParticleHandler {
             EvenTick.add(creationParticle);
         }
     }
+    /**
+     * Creates an NQMParticle at the location.
+     * @param creationParticle The particle object to create in the world.
+     * @param spawnLocation The spawn location of the particle.
+     * @param velocity The starting velocity of the particle.
+     */
     public void CreateParticle(@NotNull NQMParticle creationParticle, @NotNull Location spawnLocation, @NotNull Vector velocity) {
 
         if (SpawnConditionsNotMet(spawnLocation))
@@ -88,6 +109,11 @@ public class ParticleHandler {
         }
     }
 
+    /**
+     * Creates an NQMParticle at the location.
+     * @param creationParticle The particle object to create in the world.
+     * @param spawnLocation The spawn location of the particle.
+     */
     public void CreateParticle(@NotNull NQMParticle creationParticle, @NotNull Location spawnLocation) {
 
         if (SpawnConditionsNotMet(spawnLocation))
@@ -108,6 +134,9 @@ public class ParticleHandler {
         }
     }
 
+    /**
+     * Attempts to destroy all particles.
+     */
     public void DestroyAllParticles() {
         EvenTick.clear();
         OddTick.clear();
@@ -151,6 +180,11 @@ public class ParticleHandler {
     public List<NQMParticle> GetActiveParticles() {
         return activeParticles;
     }
+
+    /**
+     * Removes a specific particle object if it exists.
+     * @param removalParticle The particle to remove.
+     */
     public void RemoveParticle(@NotNull NQMParticle removalParticle) {
         activeParticles.remove(removalParticle);
         if (removalParticle.OddTick) {

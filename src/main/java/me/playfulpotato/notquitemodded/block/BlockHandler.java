@@ -14,6 +14,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
@@ -21,21 +22,27 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class BlockHandler {
-    public List<NQMBlock> NQMBlockObjects = new ArrayList<>();
+    public HashMap<String, NQMBlock> NQMBlockRegistry = new HashMap<>();
     private final NamespacedKey BlockIDListKey = new NamespacedKey(NotQuiteModded.GetPlugin(), "BlockIDList");
 
     /**
-     * Registers a NQM block class internally into the handler.
-     * @return Returns the NQMBlock object. Which you can cast to your specific type if you have special methods or data you wish to invoke or use later on.
+     * Registers an NQMBlock object to be used for identifying and acting like the block.
+     * @param nqmBlock The NQMBlock object to register internally.
+     * @return Returns the block object allowing you to edit it after the fact and store if need be.
      */
     public NQMBlock RegisterNQMBlock(@NotNull NQMBlock nqmBlock) {
-        NQMBlockObjects.add(nqmBlock);
+        NQMBlockRegistry.put(nqmBlock.fullStorageKey, nqmBlock);
         if (nqmBlock.doesTick) {
             new BlockTicker(nqmBlock);
         }
         return nqmBlock;
     }
 
+    /**
+     * Adds data for a new block to the world. This doesn't technically actually place the block.
+     * @param location The location to attempt the placement of the block at.
+     * @param blockType The type of block to add the data for.
+     */
     public void AddDataForNewBlock(@NotNull Location location, @NotNull NQMBlock blockType) {
         Chunk placeChunk = location.getChunk();
 
@@ -68,6 +75,11 @@ public class BlockHandler {
 
     }
 
+    /**
+     * Removes all data at the potential block location.
+     * @param currentLocation The location to attempt to remove all data from.
+     * @return Whether the action to remove the block was successful.
+     */
     public boolean RemoveDataForBlock(@NotNull Location currentLocation) {
         Chunk removeChunk = currentLocation.getChunk();
         PersistentDataContainer chunkDataContainer = removeChunk.getPersistentDataContainer();
@@ -126,14 +138,20 @@ public class BlockHandler {
         return false;
     }
 
+    /**
+     * This method gets a value out of the NQMBlock registry from a key.
+     * @param key The full storage key of the block when entering it into a registry.
+     * @return The NQMBlock object from the key entered. If nothing exists, returns null.
+     */
     public NQMBlock BlockTypeFromStorageKey(@NotNull String key) {
-        for (NQMBlock nqmBlock : NQMBlockObjects) {
-            if (nqmBlock.fullStorageKey.equals(key)) {
-                return nqmBlock;
-            }
-        }
-        return null;
+        return NQMBlockRegistry.get(key);
     }
+
+    /**
+     * Moves a block from one location to another. Heavily experimental. Prone to breaking.
+     * @param oldLocation The old location of the block to move.
+     * @param newLocation The new location for the block to move to.
+     */
     public void MoveBlockLocation(@NotNull Location oldLocation, @NotNull Location newLocation) {
         Chunk oldChunk = oldLocation.getChunk();
         Chunk newChunk = newLocation.getChunk();
@@ -229,12 +247,23 @@ public class BlockHandler {
             RevokeCertainID(oldChunk, oldID);
         }
     }
+
+    /**
+     * Makes sure the chunk has the BlockIDListKey stored inside of it.
+     * @param chunk The chunk to prepare.
+     */
     private void PrepareChunkData(@NotNull Chunk chunk) {
         PersistentDataContainer chunkDataContainer = chunk.getPersistentDataContainer();
         if (!chunkDataContainer.has(BlockIDListKey, PersistentDataType.INTEGER_ARRAY)) {
             chunkDataContainer.set(BlockIDListKey, PersistentDataType.INTEGER_ARRAY, new int[0]);
         }
     }
+
+    /**
+     * Gets the next available ID for a block to possibly be stored under in a specific chunk.
+     * @param chunk The chunk to get the next available ID for.
+     * @return The next available counted ID in a chunk.
+     */
     private int AddNextAvailableID(@NotNull Chunk chunk) {
         PersistentDataContainer chunkDataContainer = chunk.getPersistentDataContainer();
         int[] listOfCurrentBlockIDs = chunkDataContainer.get(BlockIDListKey, PersistentDataType.INTEGER_ARRAY);
@@ -265,6 +294,11 @@ public class BlockHandler {
         return (newListOfBlockIDs.size() - 1);
     }
 
+    /**
+     * Revokes a block storage ID from a chunk
+     * @param chunk The chunk to revoke from.
+     * @param IDToRevoke The ID to revoke.
+     */
     private void RevokeCertainID(@NotNull Chunk chunk, int IDToRevoke) {
         PersistentDataContainer chunkDataContainer = chunk.getPersistentDataContainer();
 
@@ -286,6 +320,12 @@ public class BlockHandler {
 
         chunkDataContainer.set(BlockIDListKey, PersistentDataType.INTEGER_ARRAY, newListOfBlockIDs);
     }
+
+    /**
+     * Gets a block type from a location.
+     * @param getLocation The location to attempt to obtain the block type from.
+     * @return The NQMBlock object that corresponds to the type at the location. Null if there isn't one.
+     */
     public NQMBlock BlockTypeFromLocation(@NotNull Location getLocation) {
         Chunk chunkCheck = getLocation.getChunk();
         PersistentDataContainer chunkDataContainer = chunkCheck.getPersistentDataContainer();
