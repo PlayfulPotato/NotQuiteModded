@@ -174,6 +174,14 @@ public class ParticleHandler {
     private void KickstartTicks() {
         if (ParticleTicker.particleTicker == null) {
             new ParticleTicker();
+        } else if (ParticleTicker.particleTicker.isCancelled()) {
+            ParticleTicker.particleTicker.cancel();
+            ParticleTicker.particleTicker = null;
+            new ParticleTicker();
+        } else if (activeParticles.size() > 3000) {
+            ParticleTicker.particleTicker.cancel();
+            ParticleTicker.particleTicker = null;
+            new ParticleTicker();
         }
     }
 

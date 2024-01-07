@@ -1,6 +1,7 @@
 package me.playfulpotato.notquitemodded.projectile;
 
 import me.playfulpotato.notquitemodded.NotQuiteModded;
+import me.playfulpotato.notquitemodded.particle.ParticleTicker;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
@@ -93,6 +94,14 @@ public class ProjectileHandler {
 
     private void KickstartTicks() {
         if (ProjectileTicker.projectileTicker == null) {
+            new ProjectileTicker();
+        } else if (ProjectileTicker.projectileTicker.isCancelled()) {
+            ProjectileTicker.projectileTicker.cancel();
+            ProjectileTicker.projectileTicker = null;
+            new ProjectileTicker();
+        } else if (activeProjectiles.size() > 250) {
+            ProjectileTicker.projectileTicker.cancel();
+            ProjectileTicker.projectileTicker = null;
             new ProjectileTicker();
         }
     }
