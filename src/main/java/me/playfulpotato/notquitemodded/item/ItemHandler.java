@@ -3,7 +3,9 @@ package me.playfulpotato.notquitemodded.item;
 import me.playfulpotato.notquitemodded.NotQuiteModded;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,5 +39,15 @@ public class ItemHandler {
      */
     public boolean ItemIsCustom(@NotNull ItemStack item) {
         return item.getItemMeta().getPersistentDataContainer().has(itemTypeKey);
+    }
+
+    /**
+     * Returns an NQMItem object correlating to an ItemStack.
+     * @param item The item to get the possible NQMItem object of.
+     * @return An NQMItem object if the item is really custom, otherwise returns null.
+     */
+    @Nullable
+    public NQMItem itemFromItemStack(@NotNull ItemStack item) {
+        return NQMItemRegistry.get(item.getItemMeta().getPersistentDataContainer().get(itemTypeKey, PersistentDataType.STRING));
     }
 }

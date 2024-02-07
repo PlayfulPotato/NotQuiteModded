@@ -1,7 +1,6 @@
 package me.playfulpotato.notquitemodded;
 
 import me.playfulpotato.notquitemodded.block.BlockHandler;
-import me.playfulpotato.notquitemodded.block.NQMBlock;
 import me.playfulpotato.notquitemodded.block.inventory.PlayerClickCustomInventory;
 import me.playfulpotato.notquitemodded.block.inventory.PlayerDragCustomInventory;
 import me.playfulpotato.notquitemodded.block.listeners.*;
