@@ -11,6 +11,7 @@ import me.playfulpotato.notquitemodded.projectile.ProjectileHandler;
 import me.playfulpotato.notquitemodded.recipe.RecipeHandler;
 import me.playfulpotato.notquitemodded.recipe.listeners.CheckForSpecialCraftClick;
 import me.playfulpotato.notquitemodded.recipe.listeners.PrepareCraftCheckRecipe;
+import me.playfulpotato.notquitemodded.sql.DatabaseHandler;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -22,6 +23,8 @@ public final class NotQuiteModded extends JavaPlugin {
     public static ItemHandler itemHandler = null;
     public static RecipeHandler recipeHandler = null;
     public static ProjectileHandler projectileHandler = null;
+    public static DatabaseHandler databaseHandler = null;
+
     @Override
     public void onEnable() {
         plugin = this;
@@ -30,6 +33,7 @@ public final class NotQuiteModded extends JavaPlugin {
         itemHandler = new ItemHandler();
         recipeHandler = new RecipeHandler();
         projectileHandler = new ProjectileHandler();
+        databaseHandler = new DatabaseHandler();
 
         PluginManager pm = this.getServer().getPluginManager();
 
@@ -65,6 +69,7 @@ public final class NotQuiteModded extends JavaPlugin {
     public void onDisable() {
         particleHandler.DestroyAllParticles();
         projectileHandler.DestroyAllProjectiles();
+        databaseHandler.shutdownAllDatabases();
     }
 
     public static BlockHandler GetBlockHandler() {
