@@ -12,9 +12,9 @@ public class EntityChangeBlock implements Listener {
 
     @EventHandler (priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void OnEntityChangeBlock(EntityChangeBlockEvent event) {
-        Location blockLocation = event.getBlock().getLocation().toCenterLocation();
-
-        if (NotQuiteModded.GetBlockHandler().BlockTypeFromLocation(blockLocation) == null)
+        Location brokenBlockLocation = event.getBlock().getLocation().toCenterLocation();
+        NQMBlock nqmBlock = NotQuiteModded.blockHandler.getNQMBlock(brokenBlockLocation);
+        if (nqmBlock == null)
             return;
         event.setCancelled(true);
     }

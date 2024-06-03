@@ -1,104 +1,124 @@
 package me.playfulpotato.notquitemodded.block;
 
-import org.apache.commons.lang3.tuple.Pair;
 import me.playfulpotato.notquitemodded.NotQuiteModded;
+import me.playfulpotato.notquitemodded.block.inventory.NQMBlockInventory;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.util.Vector;
+import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class NQMBlock {
 
-    public final Plugin plugin;
-    public final String storageKey;
-    public final String fullStorageKey;
-    public final Boolean doesTick;
-    public final Material baseBlockMaterial;
-    public int tickRate = 4;
-    public boolean hasSupportingEntities = false;
-    public Vector[] supportingEntityOffsets;
-    public int supportingEntityAmount = 0;
-    public HashMap<String, Pair<PersistentDataType, Object>> uniqueDataPairs = new HashMap<>();
+    public int[] integerArray;
+    public String[] stringArray;
+    public UUID[] entityUUIDArray;
+    protected Entity[] entityArray;
+    public Location blockLocation;
+    public String storageKey;
+    public long blockID;
+    public int semanticID;
 
+    public void CreateDefaults(int intCount, int stringCount, int entityCount) {
+        integerArray = new int[intCount];
+        stringArray = new String[stringCount];
+        entityUUIDArray = CreateEntities(new UUID[entityCount]);
+        InitializeEntityArray();
+        SetDefaultSaveData();
+    }
 
-    /**
-     * The constructor to register important basic data about a block. Not running this inside the constructor is heavily ill-advised. Proceed at your own risk when doing so.
-     * @param plugin Represents the plugin that is constructing this block.
-     * @param storageKey The storage key that a block uses to save its data. Must be unique to itself. WARNING: Changing this after the fact will lead to old data and prior blocks breaking. Tread carefully.
-     * @param baseBlockMaterial The base block material used when running the placement of the block.
-     * @param doesTick Whether this block will tick at the tick rate set inside of it.
-     * @param supportingEntityCount How many unique entities will accompany the block, this is mainly for visual purposes and advanced uses, this value can be 0. This value must match the amount of supporting entities EXACTLY, otherwise it will throw errors.
-     */
-    public NQMBlock(@NotNull Plugin plugin, @NotNull String storageKey, @NotNull Material baseBlockMaterial, @NotNull Boolean doesTick, int supportingEntityCount) {
-        this.plugin = plugin;
-        this.storageKey = storageKey;
-        this.baseBlockMaterial = baseBlockMaterial;
-        this.doesTick = doesTick;
-        this.fullStorageKey = plugin.getName() + ":" + storageKey;
-        if (supportingEntityCount > 0) {
-            this.hasSupportingEntities = true;
-            this.supportingEntityAmount = supportingEntityCount;
-            this.supportingEntityOffsets = new Vector[supportingEntityCount];
-            for (int index = 0; index < supportingEntityCount; index++) {
-                this.supportingEntityOffsets[index] = new Vector(0, 0, 0);
+    public CompletableFuture<Boolean> SaveData() {
+        return NotQuiteModded.blockDatabase.WriteUniqueBlockInformation(storageKey, blockID, integerArray, stringArray, entityUUIDArray);
+    }
+
+    public void LoadData(int intCount, int stringCount, int entityCount) {
+        Pair<Pair<int[], String[]>, UUID[]> allData = NotQuiteModded.blockDatabase.ObtainAllUniqueInformationAboutBlock(storageKey, blockID, intCount, stringCount, entityCount).join();
+        integerArray = allData.getLeft().getLeft();
+        stringArray = allData.getLeft().getRight();
+        entityUUIDArray = allData.getRight();
+        InitializeEntityArray();
+        PostLoad();
+    }
+    public void InitializeEntityArray() {
+        entityArray = new Entity[entityUUIDArray.length];
+        for (int i = 0; i < entityUUIDArray.length; i++) {
+            entityArray[i] = blockLocation.getWorld().getEntity(entityUUIDArray[i]);
+        }
+    }
+    public void DestroyData() {
+        blockLocation.getBlock().setType(Material.AIR);
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            InventoryHolder holder = player.getOpenInventory().getTopInventory().getHolder(false);
+            if (holder == null)
+                continue;
+            if (!(holder instanceof NQMBlockInventory nqmBlockInventory))
+                continue;
+            if (nqmBlockInventory.block.equals(this)) {
+                player.closeInventory();
             }
         }
-    }
-    public <T, Z> void AddNewDataKey(@NotNull String keyName, @NotNull PersistentDataType<T, Z> dataType, @NotNull Z baseValue) {
-        uniqueDataPairs.put(keyName, Pair.of(dataType, baseValue));
-    }
-    public Vector SetSupportingEntityOffset(int index, Vector offset) {
-        this.supportingEntityOffsets[index] = offset;
-        return offset;
-    }
-    public void SetCustomKeyValue(@NotNull Location blockLocation, @NotNull String keyString, @NotNull Object setValue) {
-        Chunk getterChunk = blockLocation.getChunk();
-        PersistentDataContainer chunkStorage = getterChunk.getPersistentDataContainer();
-
-        if (chunkStorage.has(new NamespacedKey(NotQuiteModded.GetPlugin(), "Block_" + blockLocation.getBlockX() + "/" + blockLocation.getBlockY() + "/" + blockLocation.getBlockZ()), PersistentDataType.INTEGER)) {
-            int ID = chunkStorage.get(new NamespacedKey(NotQuiteModded.GetPlugin(), "Block_" + blockLocation.getBlockX() + "/" + blockLocation.getBlockY() + "/" + blockLocation.getBlockZ()), PersistentDataType.INTEGER);
-
-            Pair<PersistentDataType, Object> dataPair = uniqueDataPairs.get(keyString);
-            chunkStorage.set(new NamespacedKey(this.plugin, keyString + "_" + ID), dataPair.getLeft(), setValue);
+        UnloadData();
+        for (Entity entity : entityArray) {
+            entity.remove();
         }
+        NotQuiteModded.blockDatabase.DeleteBlockData(storageKey, blockID, semanticID, blockLocation.getChunk());
+        Break();
     }
-    public @Nullable Object GetCustomKeyValue(@NotNull Location blockLocation, @NotNull String keyString) {
-        Chunk getterChunk = blockLocation.getChunk();
-        PersistentDataContainer chunkStorage = getterChunk.getPersistentDataContainer();
-
-        if (chunkStorage.has(new NamespacedKey(NotQuiteModded.GetPlugin(), "Block_" + blockLocation.getBlockX() + "/" + blockLocation.getBlockY() + "/" + blockLocation.getBlockZ()), PersistentDataType.INTEGER)) {
-            int ID = chunkStorage.get(new NamespacedKey(NotQuiteModded.GetPlugin(), "Block_" + blockLocation.getBlockX() + "/" + blockLocation.getBlockY() + "/" + blockLocation.getBlockZ()), PersistentDataType.INTEGER);
-
-            Pair<PersistentDataType, Object> dataPair = uniqueDataPairs.get(keyString);
-            return chunkStorage.get(new NamespacedKey(this.plugin, keyString + "_" + ID), dataPair.getLeft());
+    public void UnloadData() {
+        NotQuiteModded.blockHandler.idBlockMap.get(storageKey).remove(blockID);
+        HashMap<Long, List<NQMBlock>> worldMap = NotQuiteModded.blockHandler.chunkMap.get(blockLocation.getWorld().getUID());
+        List<NQMBlock> blockList = worldMap.get(blockLocation.getChunk().getChunkKey());
+        blockList.remove(this);
+        if (blockList.isEmpty()) {
+            worldMap.remove(blockLocation.getChunk().getChunkKey());
         }
-        return null;
+        NotQuiteModded.blockHandler.allBlocks.remove(this);
     }
-    public void Place(@NotNull Location placeLocation) {
-        placeLocation.toCenterLocation().getBlock().setType(baseBlockMaterial);
-        NotQuiteModded.GetBlockHandler().AddDataForNewBlock(placeLocation.toCenterLocation(), this);
-        AfterPlace(placeLocation.toCenterLocation());
+    public void InsertIntoMemory() {
+        HashMap<Long, NQMBlock> idMap = NotQuiteModded.blockHandler.idBlockMap.get(storageKey);
+        if (idMap == null) {
+            NotQuiteModded.blockHandler.idBlockMap.put(storageKey, new HashMap<>());
+            idMap = NotQuiteModded.blockHandler.idBlockMap.get(storageKey);
+        }
+        idMap.put(blockID, this);
+        HashMap<Long, List<NQMBlock>> worldMap = NotQuiteModded.blockHandler.chunkMap.get(blockLocation.getWorld().getUID());
+        if (worldMap == null) {
+            NotQuiteModded.blockHandler.chunkMap.put(blockLocation.getWorld().getUID(), new HashMap<>());
+            worldMap = NotQuiteModded.blockHandler.chunkMap.get(blockLocation.getWorld().getUID());
+        }
+        List<NQMBlock> blockList = worldMap.get(blockLocation.getChunk().getChunkKey());
+        if (blockList == null) {
+            NotQuiteModded.blockHandler.chunkMap.get(blockLocation.getWorld().getUID()).put(blockLocation.getChunk().getChunkKey(), new ArrayList<>());
+            blockList = worldMap.get(blockLocation.getChunk().getChunkKey());
+        }
+        for (int i = 0; i < blockList.size(); i++) {
+            NQMBlock nqmBlock = blockList.get(i);
+            if (nqmBlock.blockID == blockID && Objects.equals(nqmBlock.storageKey, storageKey)) {
+                blockList.remove(i);
+            }
+        }
+        blockList.add(this);
+        for (int i = 0; i < NotQuiteModded.blockHandler.allBlocks.size(); i++) {
+            NQMBlock nqmBlock = NotQuiteModded.blockHandler.allBlocks.get(i);
+            if (nqmBlock.blockID == blockID && Objects.equals(nqmBlock.storageKey, storageKey)) {
+                NotQuiteModded.blockHandler.allBlocks.remove(i);
+            }
+        }
+        NotQuiteModded.blockHandler.allBlocks.add(this);
     }
 
-    public void Break(@NotNull Location breakLocation) { }
+    public void SetDefaultSaveData() { }
+    public void Break() { }
+    public boolean AllowBreak() { return true; }
+    public void Tick() { }
+    public void Interact(PlayerInteractEvent event) { }
+    public void Place() { }
+    public UUID[] CreateEntities(@NotNull UUID[] UUIDAllocation) { return UUIDAllocation; }
+    public void PostLoad() { }
 
-    /**
-     * Runs before the deletion of any data for the block.
-     * @param breakLocation The location at which the block was broken.
-     */
-    public void PreBreak(@NotNull Location breakLocation) { }
-    public void Tick(@NotNull Location blockLocation) { }
-    public void Interact(@NotNull Location interactLocation, PlayerInteractEvent event) { }
-    public void AfterPlace(@NotNull Location placeLocation) { }
-    public UUID[] CreateSupportingEntities(@NotNull UUID[] UUIDAllocation, @NotNull Location centerBlockLocation) { return UUIDAllocation; }
 }

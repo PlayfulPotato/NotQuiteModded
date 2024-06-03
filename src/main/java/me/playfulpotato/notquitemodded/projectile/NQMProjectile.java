@@ -104,7 +104,7 @@ public abstract class NQMProjectile {
         KillEffects();
 
         NotQuiteModded.projectileHandler.activeProjectiles.remove(this);
-        if (NotQuiteModded.projectileHandler.activeProjectiles.size() == 0 && ProjectileTicker.projectileTicker != null) {
+        if (NotQuiteModded.projectileHandler.activeProjectiles.isEmpty() && ProjectileTicker.projectileTicker != null) {
             ProjectileTicker.projectileTicker.cancel();
             ProjectileTicker.projectileTicker = null;
         }

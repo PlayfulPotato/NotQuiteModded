@@ -1,26 +1,20 @@
 package me.playfulpotato.notquitemodded.block.listeners;
 
 import me.playfulpotato.notquitemodded.NotQuiteModded;
-import me.playfulpotato.notquitemodded.block.BlockTicker;
 import me.playfulpotato.notquitemodded.block.NQMBlock;
+import me.playfulpotato.notquitemodded.block.NQMBlockFactory;
 import me.playfulpotato.notquitemodded.cleanup.ChunkLoadCleanup;
-import org.bukkit.Bukkit;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.List;
 
 public class ChunkLoad implements Listener {
-
-    private static final NamespacedKey BlockIDListKey = new NamespacedKey(NotQuiteModded.GetPlugin(), "BlockIDList");
 
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChunkLoad(ChunkLoadEvent event) {
@@ -31,28 +25,22 @@ public class ChunkLoad implements Listener {
 
         ChunkLoadCleanup.CleanupChunk(loadedChunk);
 
-        PersistentDataContainer chunkDataContainer = loadedChunk.getPersistentDataContainer();
-
-        if (!chunkDataContainer.has(BlockIDListKey, PersistentDataType.INTEGER_ARRAY))
+        if (!NotQuiteModded.blockDatabase.TableExistsOffChunk(loadedChunk).join())
             return;
 
-        int[] LoadingIDs = chunkDataContainer.get(BlockIDListKey, PersistentDataType.INTEGER_ARRAY);
-        assert LoadingIDs != null;
-        for (int LoadedID : LoadingIDs) {
-
-            NQMBlock blockType = NotQuiteModded.GetBlockHandler().BlockTypeFromStorageKey(Objects.requireNonNull(chunkDataContainer.get(new NamespacedKey(NotQuiteModded.GetPlugin(), "BlockType_" + LoadedID), PersistentDataType.STRING)));
-
-            if (!blockType.doesTick)
-                return;
-
-            String parseString = chunkDataContainer.get(new NamespacedKey(NotQuiteModded.GetPlugin(), "BlockLocation_" + LoadedID), PersistentDataType.STRING);
-            assert parseString != null;
-            String[] locationValues = parseString.split("/");
-            Location parsedLocation = new Location(loadedChunk.getWorld(), Integer.parseInt(locationValues[0]) + 0.5, Integer.parseInt(locationValues[1]) + 0.5, Integer.parseInt(locationValues[2]) + 0.5);
-
-            Optional<BlockTicker> ticker = BlockTicker.AllBlockTickers.stream().filter(currentSearch -> currentSearch.getBlockType() != null && currentSearch.getBlockType().equals(blockType)).findFirst();
-            ticker.ifPresent(blockTicker -> blockTicker.AddLocation(parsedLocation.toCenterLocation()));
+        List<Pair<String, Pair<int[], Long>>> blockData = NotQuiteModded.blockDatabase.RetrieveAllBlockDataInChunk(loadedChunk).join();
+        for (Pair<String, Pair<int[], Long>> currentData : blockData) {
+            NQMBlockFactory factory = NotQuiteModded.blockHandler.factoryMap.get(currentData.getLeft());
+            NQMBlock loadedBlock = factory.factoryMethod();
+            loadedBlock.blockID = currentData.getRight().getRight();
+            loadedBlock.storageKey = factory.storageKey;
+            int[] integerData = currentData.getRight().getLeft();
+            loadedBlock.blockLocation = new Location(loadedChunk.getWorld(), integerData[0], integerData[1], integerData[2]).toCenterLocation();
+            loadedBlock.blockLocation.setPitch(0);
+            loadedBlock.blockLocation.setYaw(0);
+            loadedBlock.semanticID = integerData[3];
+            loadedBlock.LoadData(factory.intCount, factory.stringCount, factory.entityCount);
+            loadedBlock.InsertIntoMemory();
         }
-
     }
 }

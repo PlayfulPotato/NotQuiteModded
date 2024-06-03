@@ -13,12 +13,13 @@ public class BlockFade implements Listener {
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void OnBlockFade(BlockFadeEvent event) {
         Location brokenBlockLocation = event.getBlock().getLocation().toCenterLocation();
-
-        if (NotQuiteModded.GetBlockHandler().BlockTypeFromLocation(brokenBlockLocation) == null)
+        NQMBlock nqmBlock = NotQuiteModded.blockHandler.getNQMBlock(brokenBlockLocation);
+        if (nqmBlock == null)
             return;
-        NQMBlock blockType = NotQuiteModded.GetBlockHandler().BlockTypeFromLocation(brokenBlockLocation);
-        if (NotQuiteModded.GetBlockHandler().RemoveDataForBlock(brokenBlockLocation)) {
-            blockType.Break(brokenBlockLocation);
+        if (nqmBlock.AllowBreak()) {
+            nqmBlock.DestroyData();
+        } else {
+            event.setCancelled(true);
         }
     }
 }

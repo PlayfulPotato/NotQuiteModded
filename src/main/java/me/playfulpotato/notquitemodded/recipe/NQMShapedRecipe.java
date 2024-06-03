@@ -23,6 +23,6 @@ public abstract class NQMShapedRecipe {
         this.gridSetup[gridSlot - 1] = itemType.baseItemStack.getType();
         this.specialIDs[gridSlot - 1] = itemType.fullStorageKey;
         customItemCount++;
-    }
 
+    }
 }

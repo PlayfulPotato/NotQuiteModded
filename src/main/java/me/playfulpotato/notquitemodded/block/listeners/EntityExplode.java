@@ -13,16 +13,15 @@ public class EntityExplode implements Listener {
 
     @EventHandler (priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void OnEntityExplode(EntityExplodeEvent event) {
-        for (Block brokenBlock : event.blockList()) {
-            Location brokenBlockLocation = brokenBlock.getLocation().toCenterLocation();
-
-            if (NotQuiteModded.GetBlockHandler().BlockTypeFromLocation(brokenBlockLocation) == null)
+        for (int i = 0; i < event.blockList().size(); i++) {
+            Location brokenBlockLocation = event.blockList().get(i).getLocation().toCenterLocation();
+            NQMBlock nqmBlock = NotQuiteModded.blockHandler.getNQMBlock(brokenBlockLocation);
+            if (nqmBlock == null)
                 continue;
-            NQMBlock blockType = NotQuiteModded.GetBlockHandler().BlockTypeFromLocation(brokenBlockLocation);
-            if (NotQuiteModded.GetBlockHandler().RemoveDataForBlock(brokenBlockLocation)) {
-                blockType.Break(brokenBlockLocation);
-                event.setYield(0);
+            if (nqmBlock.AllowBreak()) {
+                nqmBlock.DestroyData();
             }
+            event.blockList().remove(i);
         }
     }
 }

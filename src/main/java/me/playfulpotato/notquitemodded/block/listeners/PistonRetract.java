@@ -1,6 +1,7 @@
 package me.playfulpotato.notquitemodded.block.listeners;
 
 import me.playfulpotato.notquitemodded.NotQuiteModded;
+import me.playfulpotato.notquitemodded.block.NQMBlock;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -16,12 +17,12 @@ public class PistonRetract implements Listener {
 
     @EventHandler (priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void OnPistonRetract(BlockPistonRetractEvent event) {
-        List<Block> AllBlocks = event.getBlocks();
-        for (Block currentCheck : AllBlocks) {
-            Location checkLocation = currentCheck.getLocation();
-            if (checkLocation.getChunk().getPersistentDataContainer().has(new NamespacedKey(NotQuiteModded.GetPlugin(), "Block_" + checkLocation.getBlockX() + "/" + checkLocation.getBlockY() + "/" + checkLocation.getBlockZ()), PersistentDataType.INTEGER)) {
-                event.setCancelled(true);
-            }
+        for (Block currentCheck : event.getBlocks()) {
+            Location checkLocation = currentCheck.getLocation().toCenterLocation();
+            NQMBlock nqmBlock = NotQuiteModded.blockHandler.getNQMBlock(checkLocation);
+            if (nqmBlock == null)
+                continue;
+            event.setCancelled(true);
         }
     }
 }

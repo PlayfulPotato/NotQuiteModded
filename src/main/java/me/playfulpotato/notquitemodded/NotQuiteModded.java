@@ -1,8 +1,9 @@
 package me.playfulpotato.notquitemodded;
 
+import me.playfulpotato.notquitemodded.block.BlockDatabase;
 import me.playfulpotato.notquitemodded.block.BlockHandler;
-import me.playfulpotato.notquitemodded.block.inventory.PlayerClickCustomInventory;
-import me.playfulpotato.notquitemodded.block.inventory.PlayerDragCustomInventory;
+import me.playfulpotato.notquitemodded.inventory.PlayerClickCustomInventory;
+import me.playfulpotato.notquitemodded.inventory.PlayerDragCustomInventory;
 import me.playfulpotato.notquitemodded.block.listeners.*;
 import me.playfulpotato.notquitemodded.item.ItemHandler;
 import me.playfulpotato.notquitemodded.item.listeners.*;
@@ -24,6 +25,7 @@ public final class NotQuiteModded extends JavaPlugin {
     public static RecipeHandler recipeHandler = null;
     public static ProjectileHandler projectileHandler = null;
     public static DatabaseHandler databaseHandler = null;
+    public static BlockDatabase blockDatabase = null;
 
     @Override
     public void onEnable() {
@@ -34,6 +36,7 @@ public final class NotQuiteModded extends JavaPlugin {
         recipeHandler = new RecipeHandler();
         projectileHandler = new ProjectileHandler();
         databaseHandler = new DatabaseHandler();
+        blockDatabase = new BlockDatabase();
 
         PluginManager pm = this.getServer().getPluginManager();
 
@@ -67,6 +70,12 @@ public final class NotQuiteModded extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        for (int i = 0; i < blockHandler.allBlocks.size(); i++) {
+            try {
+                blockHandler.allBlocks.get(i).SaveData().get();
+            } catch (Exception ignored) { }
+        }
+
         particleHandler.DestroyAllParticles();
         projectileHandler.DestroyAllProjectiles();
         databaseHandler.shutdownAllDatabases();

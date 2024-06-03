@@ -5,9 +5,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class NQMDatabase {
     protected Connection connection;
@@ -39,5 +38,40 @@ public abstract class NQMDatabase {
     }
     public abstract void AfterConnection();
 
+    public CompletableFuture<Boolean> keyExists(final String tableName, final String columnName, final String rowSearch) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + tableName + " WHERE " + columnName + " = " + rowSearch)) {
+                ResultSet resultSet = preparedStatement.executeQuery();
+                preparedStatement.close();
+                return resultSet.next();
+            } catch (SQLException ignored) {}
+            return false;
+        });
+    }
 
+    public CompletableFuture<Boolean> TableExists(final String tableName) {
+        CompletableFuture<Boolean> existsFuture = CompletableFuture.supplyAsync(() -> {
+            try {
+                DatabaseMetaData dbm = connection.getMetaData();
+                ResultSet rs = dbm.getTables(null, null, tableName, null);
+                return rs.next();
+            } catch (SQLException e) {
+                return null;
+            }
+        });
+        return existsFuture;
+    }
+
+    public CompletableFuture<Boolean> ColumnExists(final String tableName, final String columnName) {
+        CompletableFuture<Boolean> existsFuture = CompletableFuture.supplyAsync(() -> {
+            try {
+                DatabaseMetaData dbm = connection.getMetaData();
+                ResultSet rs = dbm.getColumns(null, null, tableName, columnName);
+                return rs.next();
+            } catch (SQLException e) {
+                return null;
+            }
+        });
+        return existsFuture;
+    }
 }
