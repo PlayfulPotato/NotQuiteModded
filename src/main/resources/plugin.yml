@@ -2,6 +2,7 @@ name: NotQuiteModded
 version: '${project.version}'
 main: me.playfulpotato.notquitemodded.NotQuiteModded
 description: A library plugin made to help other plugins with content creation.
+author: PlayfulPotato
 api-version: '1.20'
 load: STARTUP
 commands:

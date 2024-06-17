@@ -37,12 +37,13 @@ public abstract class NQMBlock {
     }
 
     public void LoadData(int intCount, int stringCount, int entityCount) {
-        Pair<Pair<int[], String[]>, UUID[]> allData = NotQuiteModded.blockDatabase.ObtainAllUniqueInformationAboutBlock(storageKey, blockID, intCount, stringCount, entityCount).join();
-        integerArray = allData.getLeft().getLeft();
-        stringArray = allData.getLeft().getRight();
-        entityUUIDArray = allData.getRight();
-        InitializeEntityArray();
-        PostLoad();
+        NotQuiteModded.blockDatabase.ObtainAllUniqueInformationAboutBlock(storageKey, blockID, intCount, stringCount, entityCount).thenAccept(allData -> {
+            integerArray = allData.getLeft().getLeft();
+            stringArray = allData.getLeft().getRight();
+            entityUUIDArray = allData.getRight();
+            InitializeEntityArray();
+            PostLoad();
+        });
     }
     public void InitializeEntityArray() {
         entityArray = new Entity[entityUUIDArray.length];

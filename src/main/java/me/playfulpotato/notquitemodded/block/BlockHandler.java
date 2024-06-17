@@ -61,15 +61,17 @@ public class BlockHandler {
         placeLocation.getBlock().setType(factory.blockBaseMaterial);
         newBlock.CreateDefaults(factory.intCount, factory.stringCount, factory.entityCount);
         newBlock.Place();
-        Pair<Integer, Long> data = NotQuiteModded.blockDatabase.WriteNewBlockData(factory.storageKey, placeLocation.getChunk(), newBlock.integerArray, newBlock.stringArray, newBlock.entityUUIDArray, placeLocation).join();
-        Integer semanticIDCheck = data.getLeft();
-        Long blockIDCheck = data.getRight();
-        if (semanticIDCheck != null) {
-            newBlock.semanticID = semanticIDCheck;
-        }
-        if (blockIDCheck != null) {
-            newBlock.blockID = blockIDCheck;
-        }
-        newBlock.InsertIntoMemory();
+
+        NotQuiteModded.blockDatabase.WriteNewBlockData(factory.storageKey, placeLocation.getChunk(), newBlock.integerArray, newBlock.stringArray, newBlock.entityUUIDArray, placeLocation).thenAccept(data -> {
+            Integer semanticIDCheck = data.getLeft();
+            Long blockIDCheck = data.getRight();
+            if (semanticIDCheck != null) {
+                newBlock.semanticID = semanticIDCheck;
+            }
+            if (blockIDCheck != null) {
+                newBlock.blockID = blockIDCheck;
+            }
+            newBlock.InsertIntoMemory();
+        });
     }
 }
