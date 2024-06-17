@@ -24,12 +24,17 @@ public class PlayerPrepareCraftItemCheck implements Listener {
             if (itemStack == null)
                 continue;
 
-            if (itemStack.getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey)) {
-                NQMItem itemType = NotQuiteModded.GetItemHandler().ItemTypeFromStorageKey(Objects.requireNonNull(Objects.requireNonNull(itemStack).getItemMeta().getPersistentDataContainer().get(ItemHandler.itemTypeKey, PersistentDataType.STRING)));
-                if (itemType.DisableMostCraftingUse) {
-                    inventory.setResult(null);
-                    return;
-                }
+            if (itemStack.getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
+                continue;
+
+            String itemStorageKey = itemStack.getItemMeta().getPersistentDataContainer().get(ItemHandler.itemTypeKey, PersistentDataType.STRING);
+            if (itemStorageKey == null)
+                continue;
+
+            NQMItem itemType = NotQuiteModded.GetItemHandler().ItemTypeFromStorageKey(itemStorageKey);
+            if (itemType.DisableMostCraftingUse) {
+                inventory.setResult(null);
+                return;
             }
         }
     }

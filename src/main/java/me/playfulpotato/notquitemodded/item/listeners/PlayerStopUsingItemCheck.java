@@ -1,20 +1,19 @@
 package me.playfulpotato.notquitemodded.item.listeners;
 
+import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import me.playfulpotato.notquitemodded.NotQuiteModded;
 import me.playfulpotato.notquitemodded.item.ItemHandler;
 import me.playfulpotato.notquitemodded.item.NQMItem;
+import org.apache.logging.log4j.core.net.Priority;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.Objects;
-
-public class PlayerItemConsumeItemCheck implements Listener {
+public class PlayerStopUsingItemCheck implements Listener {
 
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void OnPlayerConsumeItem(PlayerItemConsumeEvent event) {
+    public void onPlayerStopUsingItem(PlayerStopUsingItemEvent event) {
 
         if (event.getItem().getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
             return;
@@ -24,6 +23,8 @@ public class PlayerItemConsumeItemCheck implements Listener {
             return;
 
         NQMItem itemType = NotQuiteModded.GetItemHandler().ItemTypeFromStorageKey(itemStorageKey);
-        itemType.Consume(event.getPlayer(), event);
+        itemType.StopUsing(event.getPlayer(), event);
+
     }
+
 }

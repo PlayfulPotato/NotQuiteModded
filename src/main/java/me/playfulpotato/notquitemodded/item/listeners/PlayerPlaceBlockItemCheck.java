@@ -18,11 +18,14 @@ public class PlayerPlaceBlockItemCheck implements Listener {
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void OnPlayerPlaceBlock(BlockPlaceEvent event) {
 
-        if (!Objects.requireNonNull(event.getItemInHand()).getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
+        if (event.getItemInHand().getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
             return;
 
-        // This one singular line is a nightmare and is absolutely dog shit.
-        NQMItem itemType = NotQuiteModded.GetItemHandler().ItemTypeFromStorageKey(Objects.requireNonNull(Objects.requireNonNull(event.getItemInHand()).getItemMeta().getPersistentDataContainer().get(ItemHandler.itemTypeKey, PersistentDataType.STRING)));
+        String itemStorageKey = event.getItemInHand().getItemMeta().getPersistentDataContainer().get(ItemHandler.itemTypeKey, PersistentDataType.STRING);
+        if (itemStorageKey == null)
+            return;
+
+        NQMItem itemType = NotQuiteModded.GetItemHandler().ItemTypeFromStorageKey(itemStorageKey);
         itemType.Place(event.getPlayer(), event);
     }
 }

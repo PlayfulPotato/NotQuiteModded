@@ -12,9 +12,13 @@ public abstract class NQMBlockFactory {
     public Material blockBaseMaterial = Material.STONE;
     public int tickRate = 4;
     public boolean doesTick = false;
-    public String storageKey;
+    public final String storageKey;
+    public final Plugin plugin;
+    public final String storageName;
 
     public NQMBlockFactory(Plugin plugin, String storage) {
+        this.plugin = plugin;
+        this.storageName = storage;
         storageKey = plugin.getName() + ":" + storage;
     }
 

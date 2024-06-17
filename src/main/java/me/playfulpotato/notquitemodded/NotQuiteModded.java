@@ -1,5 +1,6 @@
 package me.playfulpotato.notquitemodded;
 
+import me.playfulpotato.notquitemodded.admin.CreativeMenuCommand;
 import me.playfulpotato.notquitemodded.block.BlockDatabase;
 import me.playfulpotato.notquitemodded.block.BlockHandler;
 import me.playfulpotato.notquitemodded.inventory.PlayerClickCustomInventory;
@@ -66,6 +67,8 @@ public final class NotQuiteModded extends JavaPlugin {
         // Recipe Related Events
         pm.registerEvents(new PrepareCraftCheckRecipe(), this);
         pm.registerEvents(new CheckForSpecialCraftClick(), this);
+
+        getCommand("CreativeMenu").setExecutor(new CreativeMenuCommand());
     }
 
     @Override

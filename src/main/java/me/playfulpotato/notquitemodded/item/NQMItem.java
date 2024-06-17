@@ -1,5 +1,6 @@
 package me.playfulpotato.notquitemodded.item;
 
+import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import me.playfulpotato.notquitemodded.NotQuiteModded;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -22,18 +23,20 @@ public abstract class NQMItem {
     public final Plugin plugin;
     public final String storageKey;
     public final String fullStorageKey;
+    public final ItemGeneralization itemType;
     public ItemStack baseItemStack;
 
-    public NQMItem(@NotNull Plugin plugin, @NotNull String storageKey, @NotNull Material baseItemMaterial, String baseItemName) {
+    public NQMItem(@NotNull Plugin plugin, @NotNull String storageKey, @NotNull Material baseItemMaterial, String baseItemName, @NotNull ItemGeneralization itemType) {
         this.plugin = plugin;
         this.storageKey = storageKey;
         this.fullStorageKey = plugin.getName() + ":" + storageKey;
+        this.itemType = itemType;
         this.baseItemStack = new ItemStack(baseItemMaterial);
         ItemMeta itemStackMeta = this.baseItemStack.getItemMeta();
         PersistentDataContainer dataContainer = itemStackMeta.getPersistentDataContainer();
         dataContainer.set(new NamespacedKey(NotQuiteModded.GetPlugin(), "itemType"), PersistentDataType.STRING, this.fullStorageKey);
         if (baseItemName != null) {
-            itemStackMeta.displayName(Component.text(baseItemName).color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
+            itemStackMeta.itemName(Component.text(baseItemName).color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
         }
         this.baseItemStack.setItemMeta(itemStackMeta);
     }
@@ -42,6 +45,8 @@ public abstract class NQMItem {
     public void Swap(@NotNull Player player, @NotNull PlayerSwapHandItemsEvent event) { }
     public void Consume(@NotNull Player player, @NotNull PlayerItemConsumeEvent event) { }
     public void Place(@NotNull Player player, @NotNull BlockPlaceEvent event) { }
+    public void StopUsing(@NotNull Player player, @NotNull PlayerStopUsingItemEvent event) { }
 
+    public ItemStack getItemForCreative() {return baseItemStack;}
 
 }

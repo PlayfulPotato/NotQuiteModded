@@ -4,3 +4,13 @@ main: me.playfulpotato.notquitemodded.NotQuiteModded
 description: A library plugin made to help other plugins with content creation.
 api-version: '1.20'
 load: STARTUP
+commands:
+  CreativeMenu:
+    description: Opens the Not Quite Modded creative menu.
+    usage: /CreativeMenu
+    permission: notquitemodded.creativemenu
+    permission-message: You do not have permission to run this command!
+permissions:
+  notquitemodded.creativemenu:
+    description: Allows access to the Not Quite Modded creative menu.
+    default: op

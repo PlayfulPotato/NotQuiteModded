@@ -1,10 +1,8 @@
 package me.playfulpotato.notquitemodded.projectile;
 
 import me.playfulpotato.notquitemodded.NotQuiteModded;
-import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
@@ -14,33 +12,33 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-
 public abstract class NQMProjectile {
-    public Entity projectileEntity;
     public Vector velocity;
     public Location position;
     public Entity projectileOwner;
     public boolean collideWithBlocks = true;
     public boolean collideWithEntities = true;
     public boolean damageEntities = true;
-    public final boolean hasEntity;
     public int timeLeft;
     public double hitBoxRadius;
     public double damage;
     public int pierce = 0;
-    private final NamespacedKey projectileCollideKey = new NamespacedKey(NotQuiteModded.GetPlugin(), "NoProjectileCollisions");
 
-    public NQMProjectile(boolean hasEntity, int timeLeft, double hitBoxRadius) {
-        this.hasEntity = hasEntity;
+    public NQMProjectile(int timeLeft, double hitBoxRadius, double damage, Entity projectileOwner, @NotNull Location position, @NotNull Vector velocity) {
         this.timeLeft = timeLeft;
         this.hitBoxRadius = hitBoxRadius;
+        this.damage = damage;
+        this.projectileOwner = projectileOwner;
+        this.position = position;
+        this.velocity = velocity;
+
+        NotQuiteModded.projectileHandler.activeProjectiles.add(this);
     }
 
     void LogicTick() {
         timeLeft--;
         if (timeLeft <= 0) {
-            Kill();
+            Destroy();
             return;
         }
         if (collideWithBlocks) {
@@ -54,7 +52,7 @@ public abstract class NQMProjectile {
                     Location hitLocation = rayResult.getHitPosition().toLocation(checkLocation.getWorld());
                     position = hitLocation.clone().setDirection(checkLocation.getDirection());
                     if (blockCollision(position, rayResult.getHitBlockFace())) {
-                        Kill();
+                        Destroy();
                         return;
                     }
                 } else {
@@ -66,6 +64,7 @@ public abstract class NQMProjectile {
         } else {
             position.add(velocity);
         }
+
         if (collideWithEntities) {
             Object[] nearbyLivingEntities = position.getNearbyLivingEntities(hitBoxRadius).toArray();
             for (int index = 0; index < nearbyLivingEntities.length; index++) {
@@ -73,9 +72,9 @@ public abstract class NQMProjectile {
 
                 if (currentEntity.isInvulnerable())
                     continue;
-                if (currentEntity.equals(projectileOwner) || currentEntity.equals(projectileEntity))
+                if (currentEntity.equals(projectileOwner))
                     continue;
-                if (currentEntity.getPersistentDataContainer().has(projectileCollideKey))
+                if (currentEntity.getPersistentDataContainer().has(ProjectileHandler.projectileCollideKey))
                     continue;
 
                 if (damageEntities)
@@ -85,39 +84,30 @@ public abstract class NQMProjectile {
 
                 pierce--;
                 if (pierce == -1) {
-                    Kill();
+                    Destroy();
                     return;
                 }
             }
         }
-        if (hasEntity) {
-            projectileEntity.teleport(position);
-            projectileEntity.setPortalCooldown(20);
-        }
 
+        ExtraLogic();
         Tick();
     }
-    void Kill() {
-        if (hasEntity)
-            projectileEntity.remove();
-
-        KillEffects();
-
+    void Destroy() {
         NotQuiteModded.projectileHandler.activeProjectiles.remove(this);
-        if (NotQuiteModded.projectileHandler.activeProjectiles.isEmpty() && ProjectileTicker.projectileTicker != null) {
-            ProjectileTicker.projectileTicker.cancel();
-            ProjectileTicker.projectileTicker = null;
-        }
-    }
 
-    public @Nullable Entity SpawnConnectedentity() {
-        return null;
+        ExtraDestroyLogic();
+        DestroyEffects();
     }
 
     public boolean blockCollision(@NotNull Location hitLocation, @Nullable BlockFace hitFace) {
         return true;
     }
+
+    protected void ExtraLogic() {}
     public void Tick() {}
-    public void KillEffects() { }
+
+    protected void ExtraDestroyLogic() {}
+    public void DestroyEffects() { }
     public void hitEntity(LivingEntity hitEntity) { }
 }

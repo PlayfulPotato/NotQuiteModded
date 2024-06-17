@@ -27,11 +27,17 @@ public class PlayerInteractItemCheck implements Listener {
         if (!event.hasItem())
             return;
 
-        if (!Objects.requireNonNull(event.getItem()).getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
+        if (event.getItem() == null)
             return;
 
-        // This one singular line is a nightmare and is absolutely dog shit.
-        NQMItem itemType = NotQuiteModded.GetItemHandler().ItemTypeFromStorageKey(Objects.requireNonNull(Objects.requireNonNull(event.getItem()).getItemMeta().getPersistentDataContainer().get(ItemHandler.itemTypeKey, PersistentDataType.STRING)));
+        if (!event.getItem().getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
+            return;
+
+        String itemStorageKey = event.getItem().getItemMeta().getPersistentDataContainer().get(ItemHandler.itemTypeKey, PersistentDataType.STRING);
+        if (itemStorageKey == null)
+            return;
+
+        NQMItem itemType = NotQuiteModded.GetItemHandler().ItemTypeFromStorageKey(itemStorageKey);
 
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK) || event.getAction().equals(Action.RIGHT_CLICK_AIR)) {
             itemType.RightClick(event.getPlayer(), event);

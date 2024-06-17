@@ -3,7 +3,6 @@ package me.playfulpotato.notquitemodded.block.listeners;
 import me.playfulpotato.notquitemodded.NotQuiteModded;
 import me.playfulpotato.notquitemodded.block.NQMBlock;
 import me.playfulpotato.notquitemodded.block.NQMBlockFactory;
-import me.playfulpotato.notquitemodded.cleanup.ChunkLoadCleanup;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -22,8 +21,6 @@ public class ChunkLoad implements Listener {
             return;
 
         Chunk loadedChunk = event.getChunk();
-
-        ChunkLoadCleanup.CleanupChunk(loadedChunk);
 
         if (!NotQuiteModded.blockDatabase.TableExistsOffChunk(loadedChunk).join())
             return;
