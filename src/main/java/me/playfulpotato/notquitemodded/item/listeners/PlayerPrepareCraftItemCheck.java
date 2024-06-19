@@ -24,7 +24,7 @@ public class PlayerPrepareCraftItemCheck implements Listener {
             if (itemStack == null)
                 continue;
 
-            if (itemStack.getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
+            if (!itemStack.getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
                 continue;
 
             String itemStorageKey = itemStack.getItemMeta().getPersistentDataContainer().get(ItemHandler.itemTypeKey, PersistentDataType.STRING);
