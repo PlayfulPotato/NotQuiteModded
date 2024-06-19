@@ -18,7 +18,7 @@ public class PlayerPlaceBlockItemCheck implements Listener {
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void OnPlayerPlaceBlock(BlockPlaceEvent event) {
 
-        if (event.getItemInHand().getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
+        if (!event.getItemInHand().getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
             return;
 
         String itemStorageKey = event.getItemInHand().getItemMeta().getPersistentDataContainer().get(ItemHandler.itemTypeKey, PersistentDataType.STRING);

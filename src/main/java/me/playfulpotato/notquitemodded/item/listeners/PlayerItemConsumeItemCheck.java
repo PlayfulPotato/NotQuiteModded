@@ -16,7 +16,7 @@ public class PlayerItemConsumeItemCheck implements Listener {
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void OnPlayerConsumeItem(PlayerItemConsumeEvent event) {
 
-        if (event.getItem().getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
+        if (!event.getItem().getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
             return;
 
         String itemStorageKey = event.getItem().getItemMeta().getPersistentDataContainer().get(ItemHandler.itemTypeKey, PersistentDataType.STRING);

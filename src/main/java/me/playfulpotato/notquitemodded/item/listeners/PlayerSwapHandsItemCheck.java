@@ -20,7 +20,7 @@ public class PlayerSwapHandsItemCheck implements Listener {
         if (event.getOffHandItem().getItemMeta() == null)
             return;
 
-        if (event.getOffHandItem().getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
+        if (!event.getOffHandItem().getItemMeta().getPersistentDataContainer().has(ItemHandler.itemTypeKey))
             return;
 
         String itemStorageKey = event.getOffHandItem().getItemMeta().getPersistentDataContainer().get(ItemHandler.itemTypeKey, PersistentDataType.STRING);
